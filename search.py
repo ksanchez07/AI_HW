@@ -81,77 +81,102 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
+    """
     print("Start:", problem.getStartState())
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    """
-    "*** YOUR CODE HERE ***"
+  
     
-    startState ← problem.getStartState()
-    stack ← {(startState, 0, [])} # Current Position, Hitting Walls, Actions
-    Mark (startState, 0) as a visited one # Current Position, Hitting Walls
-    while True:
-        currentState, hitWalls, currentActions ← decode from stack
-        if hitWalls > 2: # Do not need to search if hitting walls > 2
-            continue
-        if currentState is the the destination and hitWalls satisfy requirement:
-            return currentActions
-        for successor, action, stepCost in list of successors of currentState:
-            if success is a wall:
-                nextState ← (successor, hitWalls + 1) # Increase hitting walls by one
-            else:
-                nextState ← (successor, hitWalls) # Maintain hitting walls
-            if nextState is not visited:
-                Add (nextState[0], nextState[1], currentActions + [action]) to stack
-                Mark nextState as visited one
-    util.raiseNotDefined()
+    from util import Stack
+
+    stack = Stack()  # Stack for DFS
+    startState = problem.getStartState()
+    stack.push((startState, []))  # Push (state, actions)
+    visited = set()
+
+    while not stack.isEmpty():
+        state, actions = stack.pop()
+
+        if problem.isGoalState(state):
+            return actions  # Return path when goal is found
+
+        if state not in visited:
+            visited.add(state)
+
+            for successor, action, stepCost in problem.getSuccessors(state):
+                stack.push((successor, actions + [action]))
+
+    return []  # No solution found
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    startState ← problem.getStartState()
-    queue ← {(startState, 0, [])} # Current Position, Hitting Walls, Actions
-    Mark (startState, 0) as a visited one # Current Position, Hitting Walls
-    while True:
-        currentState, hitWalls, currentActions ← decode from queue
-        if hitWalls > 2: # Do not need to search if hitting walls > 2
-            continue
-        if currentState is the the destination and hitWalls satisfy requirement:
-            return currentActions
-        for successor, action, stepCost in list of successors of currentState:
-            if success is a wall:
-                nextState ← (successor, hitWalls + 1) # Increase hitting walls by one
+   
+   
+    from util import Queue
+
+    queue = Queue()  # Queue for BFS
+    startState = problem.getStartState()
+    queue.push((startState, 0, []))  # Push (state, hitWalls, actions)
+    visited = set()
+
+    while not queue.isEmpty():
+        state, hitWalls, actions = queue.pop()
+
+        if problem.isGoalState(state):
+            if hitWalls >= 1:  # Ensure at least one wall was hit
+                return actions
             else:
-                nextState ← (successor, hitWalls) # Maintain hitting walls
-            if nextState is not visited:
-                Add (nextState[0], nextState[1], currentActions + [action]) to queue
-                Mark nextState as visited one
-    #util.raiseNotDefined()
+                continue  # Don't return if we haven't hit a wall
+
+        if (state, hitWalls) not in visited:
+            visited.add((state, hitWalls))
+
+            for successor, action, stepCost in problem.getSuccessors(state):
+                if successor == "wall":  # Check if the successor is a wall
+                    nextHitWalls = hitWalls + 1
+                else:
+                    nextHitWalls = hitWalls
+
+                if nextHitWalls <= 2:  # Allow at most 2 wall hits
+                    queue.push((successor, nextHitWalls, actions + [action]))
+
+    return []  # No valid solution found
+
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    startState ← problem.getStartState()
-    priorityQueue ← {(startState, 0, []), cost = 0} # Current Position, Hitting Walls, Actions
-    Mark (startState, 0) as a visited one # Current Position, Hitting Walls
-    distance[(startState, 0)] ← 0
-    while True:
-        currentState, hitWalls, currentActions ← decode from priorityQueue
-        if hitWalls > 2: # Do not need to search if hitting walls > 2
-            continue
-        if currentState is the the destination and hitWalls satisfy requirement:
-            return currentActions
-        for successor, action, stepCost in list of successors of currentState:
-            if success is a wall:
-                nextState ← (successor, hitWalls + 1) # Increase hitting walls by one
-            else:
-                nextState ← (successor, hitWalls) # Maintain hitting walls
-                costToGo = get costs of [currentActions, action]
-            if costToGo < distance[nextState]:
-                Add (nextState[0], nextState[1], currentActions + [action]) with costToGo to priorityQueue
-                distance[nextState] ← costToGo
-    util.raiseNotDefined()
+   
+
+    from util import PriorityQueue
+
+    priorityQueue = PriorityQueue()  # Priority queue for UCS
+    startState = problem.getStartState()
+    priorityQueue.push((startState, []), 0)  # (state, actions) with priority 0
+    visited = {}  # Stores the lowest cost to reach each state
+
+    while not priorityQueue.isEmpty():
+        state, actions = priorityQueue.pop()
+
+        if state in visited and visited[state] < problem.getCostOfActions(actions):
+            continue  # Skip if we've found a lower-cost path
+
+        visited[state] = problem.getCostOfActions(actions)
+
+        if problem.isGoalState(state):
+            return actions  # Return path when goal is found
+
+        for successor, action, stepCost in problem.getSuccessors(state):
+            newActions = actions + [action]
+            newCost = problem.getCostOfActions(newActions)
+            if successor not in visited or newCost < visited[successor]:
+                priorityQueue.push((successor, newActions), newCost)
+                visited[successor] = newCost
+
+    return []  # No solution found
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -163,26 +188,34 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    startState ← problem.getStartState()
-    priorityQueue ← {(startState, 0, []), cost = 0} # Current Position, Hitting Walls, Actions
-    Mark (startState, 0) as a visited one # Current Position, Hitting Walls
-    distance[(startState, 0)] ← 0
-    while True:
-        currentState, hitWalls, currentActions ← decode from priorityQueue
-    if hitWalls > 2: # Do not need to search if hitting walls > 2
-        continue
-    if currentState is the the destination and hitWalls satisfy requirement:
-        return currentActions
-    for successor, action, stepCost in list of successors of currentState:
-        if success is a wall:
-            nextState ← (successor, hitWalls + 1) # Increase hitting walls by one
-        else:
-            nextState ← (successor, hitWalls) # Maintain hitting walls
-            costToGo = get costs of [currentActions, action] + heuristic(successor, problem)
-        if costToGo < distance[nextState]:
-            Add (nextState[0], nextState[1], currentActions + [action]) with costToGo to priorityQueue
-            distance[nextState] ← costToGo
-    util.raiseNotDefined()
+   
+    from util import PriorityQueue
+
+    priorityQueue = PriorityQueue()  # Priority queue for A*
+    startState = problem.getStartState()
+    priorityQueue.push((startState, []), 0)  # (state, actions) with priority 0
+    visited = {}  # Stores the lowest cost to reach each state
+
+    while not priorityQueue.isEmpty():
+        state, actions = priorityQueue.pop()
+
+        if state in visited and visited[state] < problem.getCostOfActions(actions):
+            continue  # Skip if we've found a lower-cost path
+
+        visited[state] = problem.getCostOfActions(actions)
+
+        if problem.isGoalState(state):
+            return actions  # Return path when goal is found
+
+        for successor, action, stepCost in problem.getSuccessors(state):
+            newActions = actions + [action]
+            newCost = problem.getCostOfActions(newActions) + heuristic(successor, problem)
+            if successor not in visited or newCost < visited[successor]:
+                priorityQueue.push((successor, newActions), newCost)
+                visited[successor] = newCost
+
+    return []  # No solution found
+
 
 
 # Abbreviations

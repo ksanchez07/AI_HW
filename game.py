@@ -24,7 +24,7 @@ from util import *
 import time, os
 import traceback
 import sys
-from io import cStringIO
+from io import StringIO
 
 #######################
 # Parts worth reading #
