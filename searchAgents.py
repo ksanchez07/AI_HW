@@ -318,7 +318,7 @@ class CornersProblem(search.SearchProblem):
 
         x, y = state[0]
         visitedCorners = state[1]  
-        print("hello")
+       
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
@@ -327,7 +327,7 @@ class CornersProblem(search.SearchProblem):
             if 0 <= nextx < M and 0 <= nexty < N:  
                 next_node = (nextx, nexty)
                 newVisitedCorners = list(visitedCorners)  
-                print(f"Adding successor: {nextx, nexty}")
+                
             
                 if next_node in self.corners and next_node not in successorVisitedCorners:
                     successorVisitedCorners.append(next_node)  
@@ -364,7 +364,15 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    xy = state[0]
+    visitedCorners = state[1]
+   
+    unvisitedCorners = [corner for corner in corners if corner not in visitedCorners]
+
+    heuristicvalue = [0]
+    for corner in unvisitedCorners:
+        heuristicvalue.append(util.manhattanDistance(xy, corner))
+    return max(heuristicvalue)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -458,7 +466,12 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    
+    foodPositions = foodGrid.asList()
+    heuristic = 0
+    for foodPosition in foodPositions:
+        heuristic.append(util.manhattanDistance(position, foodPosition))
+    return max(heuristic)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
