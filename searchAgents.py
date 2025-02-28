@@ -116,6 +116,11 @@ class SearchAgent(Agent):
         totalCost = problem.getCostOfActions(self.actions)
         print('Path found with total cost of %d in %.1f seconds' % (totalCost, time.time() - starttime))
         if '_expanded' in dir(problem): print('Search nodes expanded: %d' % problem._expanded)
+        problem = CornersProblem(state)  
+        print("Start State:", problem.getStartState())  
+        print("Successors:", problem.getSuccessors(problem.getStartState()))
+
+
 
     def getAction(self, state):
         """
@@ -182,6 +187,7 @@ class PositionSearchProblem(search.SearchProblem):
 
     def isWall(self, state):
         x, y = state
+        print("huh")
         return True if self.walls[x][y] else False
 
     def getSuccessors(self, state):
@@ -195,11 +201,11 @@ class PositionSearchProblem(search.SearchProblem):
          required to get there, and 'stepCost' is the incremental
          cost of expanding to that successor
         """
-
+        print("checks")
         successors = []
         M = self.walls.width
         N = self.walls.height
-
+        print("checl")
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state
             dx, dy = Actions.directionToVector(action)
@@ -214,6 +220,9 @@ class PositionSearchProblem(search.SearchProblem):
         if state not in self._visited:
             self._visited[state] = True
             self._visitedlist.append(state)
+        print("check")
+        print(f"Checking wall at ({nextx}, {nexty}): {self.walls[nextx][nexty]}")
+
 
         return successors
 
@@ -285,36 +294,47 @@ class CornersProblem(search.SearchProblem):
                 print('Warning: no food in corner ' + str(corner))
         
         self._expanded = 0  # DO NOT CHANGE
-        self.startState = (self.startingPosition, tuple())  # Initial state: position + empty visited corners list
+        self.startState = (self.startingPosition, tuple())  
 
     def getStartState(self):
-        return self.startState
+        start_state = (self.startingPosition, tuple())  # Ensure it's correctly formatted
+        print("Start state:", start_state)
+        return start_state
+
 
     def isGoalState(self, state):
         position, visitedCorners = state
-        return len(visitedCorners) == 4  # Goal reached when all four corners are visited
+        return len(visitedCorners) == 4  
 
     def isWall(self, state):
-        x, y = state[0]
-        return self.walls[x][y]  # Returns True if the position is a wall
+        xy = state[0]
+        x, y = xy
+        return self.walls[x][y]  
 
     def getSuccessors(self, state):
         successors = []
+        M = self.walls.width
+        N = self.walls.height
+
         x, y = state[0]
-        visitedCorners = state[1]  # Tuple of visited corners
-    
+        visitedCorners = state[1]  
+        print("hello")
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
+            successorVisitedCorners = list(visitedCorners)
 
-            if not self.walls[nextx][nexty]:  # Ensure it's not a wall
+            if 0 <= nextx < M and 0 <= nexty < N:  
                 next_node = (nextx, nexty)
-                newVisitedCorners = list(visitedCorners)  # Convert tuple to list
+                newVisitedCorners = list(visitedCorners)  
+                print(f"Adding successor: {nextx, nexty}")
             
-                if next_node in self.corners and next_node not in newVisitedCorners:
-                    newVisitedCorners.append(next_node)  # ✅ Use .append() instead of .add()
+                if next_node in self.corners and next_node not in successorVisitedCorners:
+                    successorVisitedCorners.append(next_node)  
 
-                successors.append(((next_node, tuple(newVisitedCorners)), action, 1))  # Convert back to tuple
+                successor = ((next_node, tuple(successorVisitedCorners)), action, 1)
+                successors.append(successor)
+       
 
         self._expanded += 1  # DO NOT CHANGE
         return successors
