@@ -402,15 +402,22 @@ class FoodSearchProblem:
     def isGoalState(self, state):
         return state[1].count() == 0
 
+    def isWall(self, state):
+        x, y = state[0]
+        return True if self.walls[x][y] else False
+    
     def getSuccessors(self, state):
         "Returns successor states, the actions they require, and a cost of 1."
         successors = []
+        M = self.walls.width
+        N = self.walls.height
+
         self._expanded += 1 # DO NOT CHANGE
         for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state[0]
             dx, dy = Actions.directionToVector(direction)
             nextx, nexty = int(x + dx), int(y + dy)
-            if not self.walls[nextx][nexty]:
+            if 0 <= nextx < M and 0 <= nexty < N: 
                 nextFood = state[1].copy()
                 nextFood[nextx][nexty] = False
                 successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
@@ -463,12 +470,11 @@ def foodHeuristic(state, problem):
     value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
-    """
+    ""*** YOUR CODE HERE ***"""
+   
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    
     foodPositions = foodGrid.asList()
-    heuristic = 0
+    heuristic = [0]
     for foodPosition in foodPositions:
         heuristic.append(util.manhattanDistance(position, foodPosition))
     return max(heuristic)
