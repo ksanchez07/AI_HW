@@ -124,47 +124,35 @@ def depthFirstSearch(problem):
     #no solution
     return []  
 
-def breadthFirstSearch(problem):
-    #same code as dfs but replace everything with queue
-    queue = Queue()
+def breadthFirstSearch(problem, initialHit=0, returnHit=False):
+    """Search the shallowest nodes in the search tree first."""
+    "*** YOUR CODE HERE ***"
+    startState = problem.getStartState()
+    queue = util.Queue()
+    visited = []
 
-    #(0,0)
-    start = problem.getStartState()
-    queue.push((start, 0, [])) 
+    queue.push((startState, initialHit, []))
+    visited.append((startState, initialHit))
 
-    #what its passed so far
-    passed = set()
+    while True:
+        currentState, hitWalls, currentActions = queue.pop()
+        if hitWalls > 2:
+            continue
+        if problem.isGoalState(currentState) and hitWalls >= 1 and hitWalls <= 2:
+            if not returnHit:
+                return currentActions, hitWalls - initialHit
+            else:
+                return currentActions, hitWalls - initialHit
 
-    #runs until path is explored
-    while not queue.isEmpty():
-
-        #gets current path
-        state, hitWalls, actions = queue.pop()
-
-        if problem.isGoalState(state):
-            if 1 <= hitWalls <= 2:
-                return actions 
-            
-            #reached max walls able to hit so dont phase anymore
-            continue 
-
-        #adds the passed path so far so it wont repeat
-        if (state, hitWalls) not in passed:
-            passed.add((state, hitWalls))
-
-            for successor, action, stepCost in problem.getSuccessors(state):
-
-                
-                temp = hitWalls  
-                if problem.isWall(successor):  
-                    temp += 1  
-
-                    #can only hit wall up to twice
-                if temp <= 2:  
-                    queue.push((successor, temp, actions + [action]))  
-
-    #no solution
-    return []  
+        for successor, action, stepCost in problem.getSuccessors(currentState):
+            if problem.isWall(successor):
+                nextState = (successor, hitWalls + 1)
+            else:
+                nextState = (successor, hitWalls)
+            if nextState in visited:
+                continue
+            queue.push((nextState[0], nextState[1], currentActions + [action]))
+            visited.append(nextState)
 
 
 

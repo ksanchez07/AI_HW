@@ -187,7 +187,7 @@ class PositionSearchProblem(search.SearchProblem):
 
     def isWall(self, state):
         x, y = state
-        print("huh")
+        
         return True if self.walls[x][y] else False
 
     def getSuccessors(self, state):
@@ -201,11 +201,11 @@ class PositionSearchProblem(search.SearchProblem):
          required to get there, and 'stepCost' is the incremental
          cost of expanding to that successor
         """
-        print("checks")
+       
         successors = []
         M = self.walls.width
         N = self.walls.height
-        print("checl")
+        
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state
             dx, dy = Actions.directionToVector(action)
@@ -220,8 +220,8 @@ class PositionSearchProblem(search.SearchProblem):
         if state not in self._visited:
             self._visited[state] = True
             self._visitedlist.append(state)
-        print("check")
-        print(f"Checking wall at ({nextx}, {nexty}): {self.walls[nextx][nexty]}")
+       
+       
 
 
         return successors
@@ -297,7 +297,7 @@ class CornersProblem(search.SearchProblem):
         self.startState = (self.startingPosition, tuple())  
 
     def getStartState(self):
-        start_state = (self.startingPosition, tuple())  # Ensure it's correctly formatted
+        start_state = (self.startingPosition, tuple())  
         print("Start state:", start_state)
         return start_state
 
@@ -429,7 +429,7 @@ class FoodSearchProblem:
         x,y= self.getStartState()[0]
         cost = 0
         for action in actions:
-            # figure out the next state and see whether it's legal
+           
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
             if self.walls[x][y]:
@@ -481,11 +481,14 @@ def foodHeuristic(state, problem):
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
+    def __init__(self):
+        super().__init__()
+        self.wallHits = 0
     def registerInitialState(self, state):
         self.actions = []
         currentState = state
         while(currentState.getFood().count() > 0):
-            nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
+            nextPathSegment = self.findPathToClosestDot(currentState) 
             self.actions += nextPathSegment
             for action in nextPathSegment:
                 legal = currentState.getLegalActions()
@@ -500,17 +503,24 @@ class ClosestDotSearchAgent(SearchAgent):
 
     def findPathToClosestDot(self, gameState):
         """
-        Returns a path (a list of actions) to the closest dot, starting from
-        gameState.
+        Returns a path (a list of actions) to the closest dot, ensuring Pacman passes through at most 2 walls.
         """
-        # Here are some useful elements of the startState
+        
         startPosition = gameState.getPacmanPosition()
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
+        
+       
+        from search import bfs
+        actions, hits = bfs(problem, initialHit=self.wallHits)
+        self.wallHits += hits
+        return actions
+           
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+
+
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -543,10 +553,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
+        x, y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return state in self.food.asList()
 
 def mazeDistance(point1, point2, gameState):
     """
